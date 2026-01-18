@@ -366,8 +366,8 @@ export class KanbanPanel {
     const feature = this._features.find(f => f.id === featureId)
     if (!feature) return
 
-    const document = await vscode.workspace.openTextDocument(feature.filePath)
-    await vscode.window.showTextDocument(document)
+    const uri = vscode.Uri.file(feature.filePath)
+    await vscode.commands.executeCommand('vscode.openWith', uri, 'kanban-markdown.featureEditor')
   }
 
   private _sendFeaturesToWebview(): void {
