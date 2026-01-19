@@ -280,17 +280,129 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 
     const nonce = this._getNonce()
 
+    // Inline skeleton styles for instant loading feedback
+    const skeletonStyles = `
+      .skeleton-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        padding: 12px;
+        box-sizing: border-box;
+        font-family: var(--vscode-font-family, system-ui, sans-serif);
+        background: var(--vscode-editor-background, #1e1e1e);
+      }
+      .skeleton-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        background: var(--vscode-sideBar-background, #252526);
+        border-radius: 6px;
+        margin-bottom: 8px;
+      }
+      .skeleton-title {
+        height: 20px;
+        width: 200px;
+        background: var(--vscode-input-background, #3c3c3c);
+        border-radius: 4px;
+        animation: skeleton-pulse 1.5s ease-in-out infinite;
+      }
+      .skeleton-badges {
+        display: flex;
+        gap: 8px;
+      }
+      .skeleton-badge {
+        height: 24px;
+        width: 70px;
+        background: var(--vscode-input-background, #3c3c3c);
+        border-radius: 4px;
+        animation: skeleton-pulse 1.5s ease-in-out infinite;
+      }
+      .skeleton-toolbar {
+        display: flex;
+        gap: 4px;
+        padding: 8px;
+        background: var(--vscode-sideBar-background, #252526);
+        border-radius: 6px;
+        margin-bottom: 8px;
+      }
+      .skeleton-btn {
+        height: 28px;
+        width: 28px;
+        background: var(--vscode-input-background, #3c3c3c);
+        border-radius: 4px;
+        animation: skeleton-pulse 1.5s ease-in-out infinite;
+      }
+      .skeleton-divider {
+        width: 1px;
+        height: 20px;
+        background: var(--vscode-input-background, #3c3c3c);
+        margin: 4px 4px;
+      }
+      .skeleton-editor {
+        flex: 1;
+        background: var(--vscode-sideBar-background, #252526);
+        border-radius: 6px;
+        padding: 16px;
+      }
+      .skeleton-line {
+        height: 14px;
+        background: var(--vscode-input-background, #3c3c3c);
+        border-radius: 3px;
+        margin-bottom: 12px;
+        animation: skeleton-pulse 1.5s ease-in-out infinite;
+      }
+      .skeleton-line:nth-child(1) { width: 60%; animation-delay: 0s; }
+      .skeleton-line:nth-child(2) { width: 80%; animation-delay: 0.1s; }
+      .skeleton-line:nth-child(3) { width: 45%; animation-delay: 0.2s; }
+      .skeleton-line:nth-child(4) { width: 70%; animation-delay: 0.3s; }
+      @keyframes skeleton-pulse {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 0.7; }
+      }
+      #root:not(:empty) + .skeleton-container { display: none; }
+    `
+
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
+  <style nonce="${nonce}">${skeletonStyles}</style>
   <link href="${styleUri}" rel="stylesheet">
   <title>Feature Editor</title>
 </head>
 <body>
   <div id="root"></div>
+  <div class="skeleton-container">
+    <div class="skeleton-header">
+      <div class="skeleton-title"></div>
+      <div class="skeleton-badges">
+        <div class="skeleton-badge"></div>
+        <div class="skeleton-badge"></div>
+      </div>
+    </div>
+    <div class="skeleton-toolbar">
+      <div class="skeleton-btn"></div>
+      <div class="skeleton-btn"></div>
+      <div class="skeleton-divider"></div>
+      <div class="skeleton-btn"></div>
+      <div class="skeleton-btn"></div>
+      <div class="skeleton-btn"></div>
+      <div class="skeleton-btn"></div>
+      <div class="skeleton-divider"></div>
+      <div class="skeleton-btn"></div>
+      <div class="skeleton-btn"></div>
+      <div class="skeleton-btn"></div>
+    </div>
+    <div class="skeleton-editor">
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line"></div>
+    </div>
+  </div>
   <script type="module" nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>`

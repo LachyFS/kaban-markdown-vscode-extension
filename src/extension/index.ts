@@ -123,7 +123,7 @@ function serializeFeature(feature: Feature): string {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-  // Register the custom markdown editor
+  // Register the custom markdown editor for feature files
   context.subscriptions.push(MarkdownEditorProvider.register(context))
 
   context.subscriptions.push(

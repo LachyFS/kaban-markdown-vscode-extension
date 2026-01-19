@@ -16,11 +16,18 @@ export default defineConfig({
       output: {
         entryFileNames: '[name].js',
         chunkFileNames: '[name]-[hash].js',
-        assetFileNames: '[name].[ext]'
+        assetFileNames: '[name].[ext]',
+        // Split vendor deps into separate chunks for parallel loading
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+          'icons': ['lucide-react']
+        }
       }
     },
     cssCodeSplit: false,
-    sourcemap: true
+    sourcemap: true,
+    // Optimize chunk size
+    chunkSizeWarningLimit: 300
   },
   resolve: {
     alias: {

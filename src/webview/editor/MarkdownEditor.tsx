@@ -4,28 +4,9 @@ import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import { Markdown } from 'tiptap-markdown'
 import {
-  Bold,
-  Italic,
-  Strikethrough,
-  Code,
-  Heading1,
-  Heading2,
-  Heading3,
-  List,
-  ListOrdered,
-  Quote,
-  Minus,
-  Undo,
-  Redo,
-  Copy,
-  Clipboard,
-  Scissors,
-  TextSelect,
   Calendar,
   User,
   ChevronDown,
-  Eye,
-  FileCode,
   Sparkles
 } from 'lucide-react'
 import { useEditorStore } from './store'
@@ -41,33 +22,6 @@ declare const acquireVsCodeApi: () => {
 
 // Only acquire once - store on window to survive hot reloads
 const vscode = (window as any).__vscode || ((window as any).__vscode = acquireVsCodeApi())
-
-interface ToolbarButtonProps {
-  onClick: () => void
-  isActive?: boolean
-  disabled?: boolean
-  children: React.ReactNode
-  title: string
-}
-
-function ToolbarButton({ onClick, isActive, disabled, children, title }: ToolbarButtonProps) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      className="toolbar-button"
-      data-active={isActive}
-      data-disabled={disabled}
-    >
-      {children}
-    </button>
-  )
-}
-
-function ToolbarDivider() {
-  return <div className="toolbar-divider" />
-}
 
 interface FrontmatterPanelProps {
   frontmatter: FeatureFrontmatter
@@ -311,42 +265,31 @@ function FrontmatterPanel({ frontmatter, onUpdate }: FrontmatterPanelProps) {
   )
 }
 
-type EditorMode = 'preview' | 'raw'
-
 export function MarkdownEditor() {
-  const { content, frontmatter, setContent, setFrontmatter, setFileName, setIsDarkMode } = useEditorStore()
-  const isExternalUpdate = useRef(false)
-  const [editorMode, setEditorMode] = useState<EditorMode>('preview')
-  const rawTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const { frontmatter, setContent, setFrontmatter, setFileName, setIsDarkMode } = useEditorStore()
+  const isUpdatingFromExtension = useRef(false)
 
+  // Initialize Tiptap editor
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({
-        heading: {
-          levels: [1, 2, 3]
-        }
-      }),
+      StarterKit,
       Placeholder.configure({
         placeholder: 'Start writing...'
       }),
       Markdown.configure({
         html: false,
-        transformCopiedText: true,
-        transformPastedText: true
+        transformPastedText: true,
+        transformCopiedText: true
       })
     ],
     content: '',
-    editorProps: {
-      attributes: {
-        class: 'prose prose-invert'
-      }
-    },
     onUpdate: ({ editor }) => {
-      if (isExternalUpdate.current) return
+      if (isUpdatingFromExtension.current) return
 
-      const markdown = editor.storage.markdown.getMarkdown()
+      // Get markdown from the editor using the markdown extension
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const markdown = (editor.storage as any).markdown.getMarkdown()
       setContent(markdown)
-
       vscode.postMessage({
         type: 'contentUpdate',
         content: markdown
@@ -370,18 +313,18 @@ export function MarkdownEditor() {
           setFrontmatter(message.frontmatter)
           setFileName(message.fileName)
           if (editor) {
-            isExternalUpdate.current = true
-            editor.commands.setContent(message.content || '')
-            isExternalUpdate.current = false
+            isUpdatingFromExtension.current = true
+            editor.commands.setContent(message.content)
+            isUpdatingFromExtension.current = false
           }
           break
 
         case 'contentChanged':
+          setContent(message.content)
           if (editor) {
-            isExternalUpdate.current = true
-            editor.commands.setContent(message.content || '')
-            setContent(message.content)
-            isExternalUpdate.current = false
+            isUpdatingFromExtension.current = true
+            editor.commands.setContent(message.content)
+            isUpdatingFromExtension.current = false
           }
           break
 
@@ -393,7 +336,7 @@ export function MarkdownEditor() {
 
     window.addEventListener('message', handleMessage)
     return () => window.removeEventListener('message', handleMessage)
-  }, [editor, setContent, setFrontmatter, setFileName, setIsDarkMode])
+  }, [setContent, setFrontmatter, setFileName, setIsDarkMode, editor])
 
   // Watch for VSCode theme changes
   useEffect(() => {
@@ -425,74 +368,6 @@ export function MarkdownEditor() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  const toggleBold = useCallback(() => editor?.chain().focus().toggleBold().run(), [editor])
-  const toggleItalic = useCallback(() => editor?.chain().focus().toggleItalic().run(), [editor])
-  const toggleStrike = useCallback(() => editor?.chain().focus().toggleStrike().run(), [editor])
-  const toggleCode = useCallback(() => editor?.chain().focus().toggleCode().run(), [editor])
-  const toggleHeading1 = useCallback(() => editor?.chain().focus().toggleHeading({ level: 1 }).run(), [editor])
-  const toggleHeading2 = useCallback(() => editor?.chain().focus().toggleHeading({ level: 2 }).run(), [editor])
-  const toggleHeading3 = useCallback(() => editor?.chain().focus().toggleHeading({ level: 3 }).run(), [editor])
-  const toggleBulletList = useCallback(() => editor?.chain().focus().toggleBulletList().run(), [editor])
-  const toggleOrderedList = useCallback(() => editor?.chain().focus().toggleOrderedList().run(), [editor])
-  const toggleBlockquote = useCallback(() => editor?.chain().focus().toggleBlockquote().run(), [editor])
-  const setHorizontalRule = useCallback(() => editor?.chain().focus().setHorizontalRule().run(), [editor])
-  const undo = useCallback(() => editor?.chain().focus().undo().run(), [editor])
-  const redo = useCallback(() => editor?.chain().focus().redo().run(), [editor])
-
-  // Selection actions
-  const selectAll = useCallback(() => editor?.chain().focus().selectAll().run(), [editor])
-  const copySelection = useCallback(() => {
-    if (!editor) return
-    const { from, to } = editor.state.selection
-    const text = editor.state.doc.textBetween(from, to, '\n')
-    navigator.clipboard.writeText(text)
-  }, [editor])
-  const cutSelection = useCallback(() => {
-    if (!editor) return
-    const { from, to } = editor.state.selection
-    const text = editor.state.doc.textBetween(from, to, '\n')
-    navigator.clipboard.writeText(text)
-    editor.chain().focus().deleteSelection().run()
-  }, [editor])
-  const pasteFromClipboard = useCallback(async () => {
-    if (!editor) return
-    try {
-      const text = await navigator.clipboard.readText()
-      editor.chain().focus().insertContent(text).run()
-    } catch (err) {
-      console.error('Failed to read clipboard:', err)
-    }
-  }, [editor])
-
-  // Check if there's a selection
-  const hasSelection = editor ? !editor.state.selection.empty : false
-
-  // Toggle between raw and preview modes
-  const toggleEditorMode = useCallback(() => {
-    if (editorMode === 'preview') {
-      // Switching to raw mode - sync content from Tiptap
-      setEditorMode('raw')
-    } else {
-      // Switching to preview mode - sync content to Tiptap
-      if (editor) {
-        isExternalUpdate.current = true
-        editor.commands.setContent(content || '')
-        isExternalUpdate.current = false
-      }
-      setEditorMode('preview')
-    }
-  }, [editorMode, editor, content])
-
-  // Handle raw textarea changes
-  const handleRawContentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newContent = e.target.value
-    setContent(newContent)
-    vscode.postMessage({
-      type: 'contentUpdate',
-      content: newContent
-    })
-  }, [setContent])
-
   // Handle frontmatter updates
   const handleFrontmatterUpdate = useCallback((updates: Partial<FeatureFrontmatter>) => {
     if (!frontmatter) return
@@ -511,113 +386,18 @@ export function MarkdownEditor() {
     vscode.postMessage({ type: 'startWithAI', agent, permissionMode })
   }, [])
 
-  if (!editor) {
-    return (
-      <div className="editor-loading">
-        Loading editor...
-      </div>
-    )
-  }
-
   return (
     <div className="editor-container">
       {frontmatter && <FrontmatterPanel frontmatter={frontmatter} onUpdate={handleFrontmatterUpdate} />}
 
-      {/* Toolbar */}
-      <div className="editor-toolbar">
-        <ToolbarButton onClick={undo} disabled={!editor.can().undo()} title="Undo (Ctrl+Z)">
-          <Undo size={16} />
-        </ToolbarButton>
-        <ToolbarButton onClick={redo} disabled={!editor.can().redo()} title="Redo (Ctrl+Y)">
-          <Redo size={16} />
-        </ToolbarButton>
-
-        <ToolbarDivider />
-
-        <ToolbarButton onClick={cutSelection} disabled={!hasSelection} title="Cut (Ctrl+X)">
-          <Scissors size={16} />
-        </ToolbarButton>
-        <ToolbarButton onClick={copySelection} disabled={!hasSelection} title="Copy (Ctrl+C)">
-          <Copy size={16} />
-        </ToolbarButton>
-        <ToolbarButton onClick={pasteFromClipboard} title="Paste (Ctrl+V)">
-          <Clipboard size={16} />
-        </ToolbarButton>
-        <ToolbarButton onClick={selectAll} title="Select All (Ctrl+A)">
-          <TextSelect size={16} />
-        </ToolbarButton>
-
-        <ToolbarDivider />
-
-        <ToolbarButton onClick={toggleBold} isActive={editor.isActive('bold')} title="Bold (Ctrl+B)">
-          <Bold size={16} />
-        </ToolbarButton>
-        <ToolbarButton onClick={toggleItalic} isActive={editor.isActive('italic')} title="Italic (Ctrl+I)">
-          <Italic size={16} />
-        </ToolbarButton>
-        <ToolbarButton onClick={toggleStrike} isActive={editor.isActive('strike')} title="Strikethrough">
-          <Strikethrough size={16} />
-        </ToolbarButton>
-        <ToolbarButton onClick={toggleCode} isActive={editor.isActive('code')} title="Inline Code">
-          <Code size={16} />
-        </ToolbarButton>
-
-        <ToolbarDivider />
-
-        <ToolbarButton onClick={toggleHeading1} isActive={editor.isActive('heading', { level: 1 })} title="Heading 1">
-          <Heading1 size={16} />
-        </ToolbarButton>
-        <ToolbarButton onClick={toggleHeading2} isActive={editor.isActive('heading', { level: 2 })} title="Heading 2">
-          <Heading2 size={16} />
-        </ToolbarButton>
-        <ToolbarButton onClick={toggleHeading3} isActive={editor.isActive('heading', { level: 3 })} title="Heading 3">
-          <Heading3 size={16} />
-        </ToolbarButton>
-
-        <ToolbarDivider />
-
-        <ToolbarButton onClick={toggleBulletList} isActive={editor.isActive('bulletList')} title="Bullet List">
-          <List size={16} />
-        </ToolbarButton>
-        <ToolbarButton onClick={toggleOrderedList} isActive={editor.isActive('orderedList')} title="Numbered List">
-          <ListOrdered size={16} />
-        </ToolbarButton>
-        <ToolbarButton onClick={toggleBlockquote} isActive={editor.isActive('blockquote')} title="Quote">
-          <Quote size={16} />
-        </ToolbarButton>
-        <ToolbarButton onClick={setHorizontalRule} title="Horizontal Rule">
-          <Minus size={16} />
-        </ToolbarButton>
-
-        <ToolbarDivider />
-
-        <ToolbarButton
-          onClick={toggleEditorMode}
-          isActive={editorMode === 'raw'}
-          title={editorMode === 'preview' ? 'Show Raw Markdown' : 'Show Preview'}
-        >
-          {editorMode === 'preview' ? <FileCode size={16} /> : <Eye size={16} />}
-        </ToolbarButton>
-
-        <div className="toolbar-spacer" />
-
+      {/* AI Button Bar */}
+      <div className="ai-toolbar">
         <AIAgentDropdown onSelect={startWithAI} />
       </div>
 
       {/* Editor Content */}
       <div className="editor-content">
-        {editorMode === 'preview' ? (
-          <EditorContent editor={editor} />
-        ) : (
-          <textarea
-            ref={rawTextareaRef}
-            className="raw-markdown-editor"
-            value={content}
-            onChange={handleRawContentChange}
-            placeholder="Enter markdown here..."
-            spellCheck={false}
-          />
-        )}
+        <EditorContent editor={editor} className="tiptap-editor" />
       </div>
     </div>
   )
