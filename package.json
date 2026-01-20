@@ -3,7 +3,7 @@
   "displayName": "Kanban Markdown",
   "description": "A kanban board for your codebase. Features stored as markdown.",
   "version": "0.1.0",
-  "publisher": "kanban-markdown",
+  "publisher": "LachyFS",
   "license": "MIT",
   "repository": {
     "type": "git",
