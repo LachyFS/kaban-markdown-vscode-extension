@@ -6,6 +6,8 @@ A VSCode/Cursor extension that brings a full-featured kanban board directly into
 [![Open VSX](https://img.shields.io/open-vsx/v/LachyFS/kanban-markdown?label=Open%20VSX&logo=vscodium)](https://open-vsx.org/extension/LachyFS/kanban-markdown)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
+![Editor View](docs/images/editor-view.png)
+
 ## Features
 
 ### Kanban Board
@@ -31,6 +33,8 @@ A VSCode/Cursor extension that brings a full-featured kanban board directly into
 - Inline frontmatter editing for metadata
 - Auto-refresh when files change externally
 - Theme integration with VSCode/Cursor (light & dark mode)
+
+![Kanban Board Overview](docs/images/board-overview.png)
 
 ## Installation
 
@@ -98,21 +102,6 @@ pnpm lint
 1. Press `F5` in VSCode to launch the Extension Development Host
 2. Open the command palette and run "Open Kanban Board"
 3. Make changes and reload the window (`Cmd+R`) to see updates
-
-### Project Structure
-
-```
-src/
-├── extension/           # VSCode extension code
-│   ├── index.ts         # Activation & commands
-│   └── KanbanPanel.ts   # Webview panel & file I/O
-├── webview/             # React UI
-│   ├── App.tsx          # Root component
-│   ├── store/           # Zustand state management
-│   └── components/      # UI components
-└── shared/
-    └── types.ts         # Shared TypeScript types
-```
 
 ### Tech Stack
 
