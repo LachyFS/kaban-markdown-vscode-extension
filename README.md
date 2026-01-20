@@ -6,7 +6,7 @@ A VSCode/Cursor extension that brings a full-featured kanban board directly into
 [![Open VSX](https://img.shields.io/open-vsx/v/LachyFS/kanban-markdown?label=Open%20VSX&logo=vscodium)](https://open-vsx.org/extension/LachyFS/kanban-markdown)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-![Editor View](docs/images/editor-view.png)
+![Kanban Board Overview](docs/images/board-overview.png)
 
 ## Features
 
@@ -34,7 +34,7 @@ A VSCode/Cursor extension that brings a full-featured kanban board directly into
 - Auto-refresh when files change externally
 - Theme integration with VSCode/Cursor (light & dark mode)
 
-![Kanban Board Overview](docs/images/board-overview.png)
+![Editor View](docs/images/editor-view.png)
 
 ## Installation
 
