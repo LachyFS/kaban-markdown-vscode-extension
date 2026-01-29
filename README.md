@@ -8,6 +8,9 @@ A VSCode/Cursor extension that brings a full-featured kanban board directly into
 
 ![Kanban Board Overview](https://raw.githubusercontent.com/LachyFS/kanban-markdown-vscode-extension/main/docs/images/board-overview.png)
 
+![Editor View](https://raw.githubusercontent.com/LachyFS/kanban-markdown-vscode-extension/main/docs/images/editor-view.png)
+
+
 ## Features
 
 ### Kanban Board
@@ -50,8 +53,6 @@ A VSCode/Cursor extension that brings a full-featured kanban board directly into
 - **Codex**: Suggest, Auto-edit, and Full Auto modes
 - **OpenCode**: Agent integration support
 - AI receives feature context (title, priority, labels, description) for informed assistance
-
-![Editor View](https://raw.githubusercontent.com/LachyFS/kanban-markdown-vscode-extension/main/docs/images/editor-view.png)
 
 ## Installation
 
