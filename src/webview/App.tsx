@@ -49,6 +49,10 @@ function App(): React.JSX.Element {
 
       switch (e.key) {
         case 'n':
+          // Don't open new feature panel if editing an existing feature
+          if (editingFeature) {
+            return
+          }
           e.preventDefault()
           setCreateFeatureStatus('backlog')
           setCreateFeatureOpen(true)
@@ -63,7 +67,7 @@ function App(): React.JSX.Element {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [createFeatureOpen])
+  }, [createFeatureOpen, editingFeature])
 
   // Listen for VSCode theme changes
   useEffect(() => {
